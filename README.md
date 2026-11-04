@@ -8,10 +8,6 @@ Hisepress began as an internal tool for integration-testing the Allen
 Institute's Human Immune System Explorer (HISE), hence the name. It has since
 been generalized into a standalone tool for testing any HTTP API.
 
-> **Status:** early. The engine, CLI (JUnit/JSON reports), exec steps and
-> authentication profiles work and are tested. A JSON schema is published for
-> editor support (see Roadmap for what's left).
-
 ```yaml
 name: create and fetch
 variables:
@@ -249,10 +245,9 @@ reduces risk; it is not a sandbox. The suite can still make requests to any
 public host and use any credential you allow, and it can reach private network
 addresses. Do not allow secrets you are not prepared to have it use.
 
-## Roadmap
+## Known Issues
 
 1. Integers above 2^53 are not preserved through variables (`json.Number` end to end would fix it)
-2. First tagged release: `.github/workflows/ci.yml` and `.goreleaser.yaml` are in place but have not yet run
 
 ## License
 
