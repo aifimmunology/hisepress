@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=../schema/suite.schema.json
+# Runs a Python script between two HTTP calls. Needs network and python3.
+#
+#   hisepress run examples/exec.yaml
+#   hisepress run examples/exec.yaml --untrusted  # refused: the suite has an exec step
+name: exec example
+variables:
+  host: httpbin.org
+
+steps:
+  - name: get a uuid
+    request:
+      url: https://<var name=host />/uuid
+    assignments:
+      - {var: uuid, jsonPath: $.uuid}
+
+  - name: transform it with a script
+    description: "stdin is a JSON document with args and outDir; stdout must be JSON"
+    exec:
+      command: [python3, scripts/shout.py]   # relative to this file's directory
+      args:
+        text: <var name=uuid />
+    assignments:
+      - {var: shouted, jsonPath: $.upper}
+    conditions:
+      - condition: len(shouted) == 36
+        expectedValue: true
+
+  - name: use the script's output in another request
+    request:
+      url: https://<var name=host />/anything/<var name=shouted />
+    assignments:
+      - {var: echoedUrl, jsonPath: $.url}

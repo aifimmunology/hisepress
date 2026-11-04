@@ -1,0 +1,9 @@
+/hisepress
+/cmd/hisepress/hisepress
+/dist/
+*.log
+*.test
+.DS_Store
+*~
+.env
+*credentials*.json

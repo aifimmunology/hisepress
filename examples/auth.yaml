@@ -1,0 +1,71 @@
+# yaml-language-server: $schema=../schema/suite.schema.json
+# Authentication profiles against httpbin's credential-checking endpoints.
+# Needs network. The exec profile also needs python3.
+#
+#   hisepress run examples/auth.yaml
+#   hisepress run examples/auth.yaml --untrusted  # refused: one profile uses exec
+name: auth example
+
+variables:
+  host: httpbin.org
+
+# Profiles are named; a step picks one with `auth:`. Secrets belong in
+# environment variables (tokenEnv, passwordEnv, clientSecretEnv, ...), not in
+# the suite. Literals are used below only because httpbin is a public demo.
+auth:
+  static-bearer:
+    type: bearer
+    token: demo-token
+    hosts: [httpbin.org]          # never send this to any other host
+  basic-user:
+    type: basic
+    username: user
+    password: pass
+    hosts: [httpbin.org]
+  from-script:
+    type: exec                    # a command prints a token; it is cached for 5 minutes
+    command: [python3, -c, "print('token-from-script')"]
+    hosts: [httpbin.org]
+  # type: oauth2-client-credentials is also built in:
+  #   tokenUrl: https://login.example.com/oauth/token
+  #   clientId: my-client
+  #   clientSecretEnv: MY_CLIENT_SECRET
+  #   scope: read
+
+defaultAuth: static-bearer        # used by steps that don't say otherwise
+
+steps:
+  - name: default profile (bearer)
+    request:
+      url: https://<var name=host />/bearer
+    assignments:
+      - {var: token, jsonPath: $.token}
+    conditions:
+      - condition: token == "demo-token"
+        expectedValue: true
+
+  - name: a different profile for this step
+    auth: basic-user
+    request:
+      url: https://<var name=host />/basic-auth/user/pass
+    assignments:
+      - {var: authenticated, jsonPath: $.authenticated}
+    conditions:
+      - condition: authenticated
+        expectedValue: true
+
+  - name: token from a command
+    auth: from-script
+    request:
+      url: https://<var name=host />/bearer
+    assignments:
+      - {var: scriptToken, jsonPath: $.token}
+    conditions:
+      - condition: scriptToken == "token-from-script"
+        expectedValue: true
+
+  - name: no authentication at all
+    auth: none
+    request:
+      url: https://<var name=host />/bearer
+    expectedHTTPStatus: 401

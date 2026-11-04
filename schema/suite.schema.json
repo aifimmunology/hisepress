@@ -1,0 +1,601 @@
+{
+  "$defs": {
+    "Assignment": {
+      "additionalProperties": false,
+      "properties": {
+        "jsonPath": {
+          "description": "JSONPath into the step's result, e.g. $.items[0].id.",
+          "type": "string"
+        },
+        "var": {
+          "description": "Variable to set.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "jsonPath",
+        "var"
+      ],
+      "type": "object"
+    },
+    "AuthProfile": {
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "bearer"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "anyOf": [
+              {
+                "required": [
+                  "token"
+                ]
+              },
+              {
+                "required": [
+                  "tokenEnv"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "basic"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "allOf": [
+              {
+                "anyOf": [
+                  {
+                    "required": [
+                      "username"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "usernameEnv"
+                    ]
+                  }
+                ]
+              },
+              {
+                "anyOf": [
+                  {
+                    "required": [
+                      "password"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "passwordEnv"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "header"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "allOf": [
+              {
+                "required": [
+                  "header"
+                ]
+              },
+              {
+                "anyOf": [
+                  {
+                    "required": [
+                      "value"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "valueEnv"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "oauth2-client-credentials"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "allOf": [
+              {
+                "required": [
+                  "tokenUrl"
+                ]
+              },
+              {
+                "anyOf": [
+                  {
+                    "required": [
+                      "clientId"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "clientIdEnv"
+                    ]
+                  }
+                ]
+              },
+              {
+                "anyOf": [
+                  {
+                    "required": [
+                      "clientSecret"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "clientSecretEnv"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "exec"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "required": [
+              "command"
+            ]
+          }
+        }
+      ],
+      "properties": {
+        "allowInsecure": {
+          "description": "Allow sending credentials over plain http to hosts other than localhost. Off by default.",
+          "type": "boolean"
+        },
+        "audience": {
+          "description": "OAuth2 audience.",
+          "type": "string"
+        },
+        "authStyle": {
+          "description": "Where to send client credentials: header (HTTP Basic, the default) or body.",
+          "enum": [
+            "header",
+            "body"
+          ],
+          "type": "string"
+        },
+        "cacheSeconds": {
+          "description": "How long to reuse a token printed by command. Default 300.",
+          "type": "integer"
+        },
+        "clientId": {
+          "description": "OAuth2 client id. Prefer clientIdEnv.",
+          "type": "string"
+        },
+        "clientIdEnv": {
+          "description": "Environment variable holding the client id.",
+          "type": "string"
+        },
+        "clientSecret": {
+          "description": "OAuth2 client secret. Prefer clientSecretEnv.",
+          "type": "string"
+        },
+        "clientSecretEnv": {
+          "description": "Environment variable holding the client secret.",
+          "type": "string"
+        },
+        "command": {
+          "description": "Program that prints a token on stdout, or JSON {\"token\": \"...\", \"expiresIn\": 3600}.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "type": "array"
+        },
+        "header": {
+          "description": "Header to set. Default Authorization (required for type header).",
+          "type": "string"
+        },
+        "hosts": {
+          "description": "Only send credentials to these hostnames (\"api.example.com\", or \"*.example.com\" for subdomains). Other hosts make the request fail.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "options": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Settings for custom profile types registered with RegisterAuth.",
+          "type": "object"
+        },
+        "password": {
+          "description": "Password. Prefer passwordEnv.",
+          "type": "string"
+        },
+        "passwordEnv": {
+          "description": "Environment variable holding the password.",
+          "type": "string"
+        },
+        "scheme": {
+          "description": "Prefix before the token. Default Bearer; \"none\" sends the bare token.",
+          "type": "string"
+        },
+        "scope": {
+          "description": "OAuth2 scope.",
+          "type": "string"
+        },
+        "token": {
+          "description": "Token. Prefer tokenEnv.",
+          "type": "string"
+        },
+        "tokenEnv": {
+          "description": "Environment variable holding the token.",
+          "type": "string"
+        },
+        "tokenUrl": {
+          "description": "OAuth2 token endpoint.",
+          "type": "string"
+        },
+        "type": {
+          "description": "Profile type: bearer, basic, header, oauth2-client-credentials, exec, or a type added with RegisterAuth.",
+          "examples": [
+            "bearer",
+            "basic",
+            "header",
+            "oauth2-client-credentials",
+            "exec"
+          ],
+          "type": "string"
+        },
+        "username": {
+          "description": "Username. Prefer usernameEnv.",
+          "type": "string"
+        },
+        "usernameEnv": {
+          "description": "Environment variable holding the username.",
+          "type": "string"
+        },
+        "value": {
+          "description": "Header value. Prefer valueEnv.",
+          "type": "string"
+        },
+        "valueEnv": {
+          "description": "Environment variable holding the header value.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "type": "object"
+    },
+    "Code": {
+      "additionalProperties": false,
+      "properties": {
+        "args": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "String arguments passed to the function.",
+          "type": "object"
+        },
+        "name": {
+          "description": "Name of a function registered with hisepress.Register.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "type": "object"
+    },
+    "Condition": {
+      "additionalProperties": false,
+      "properties": {
+        "condition": {
+          "description": "Expression over suite variables, e.g. status == \"done\" \u0026\u0026 len(items) \u003e 0.",
+          "type": "string"
+        },
+        "expectedValue": {
+          "description": "Value the expression must evaluate to. Default true."
+        }
+      },
+      "required": [
+        "condition"
+      ],
+      "type": "object"
+    },
+    "Exec": {
+      "additionalProperties": false,
+      "properties": {
+        "args": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Arguments passed to the program in the JSON document on stdin, and as HISEPRESS_ARG_\u003cNAME\u003e environment variables.",
+          "type": "object"
+        },
+        "command": {
+          "description": "Program and arguments, run directly (no shell). Relative to the suite file's directory.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "type": "array"
+        },
+        "env": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Extra environment variables for the program.",
+          "type": "object"
+        },
+        "passVars": {
+          "description": "Include all suite variables in the stdin document. Off by default because variables may hold secrets.",
+          "type": "boolean"
+        },
+        "timeoutSeconds": {
+          "description": "Kill the program after this long. Default 300.",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "command"
+      ],
+      "type": "object"
+    },
+    "Request": {
+      "additionalProperties": false,
+      "properties": {
+        "body": {
+          "description": "Request body: JSON for objects and lists, sent as-is for strings. With files, an object of extra form fields."
+        },
+        "files": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Multipart upload: form field name to a file path, relative to the suite file's directory.",
+          "type": "object"
+        },
+        "followRedirects": {
+          "description": "Follow redirects (default true). Requests carrying credentials never follow redirects to another host or from https to http. When a redirect is not followed, the 3xx response is the result.",
+          "type": "boolean"
+        },
+        "headers": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Request headers. These override headers set by an auth profile.",
+          "type": "object"
+        },
+        "method": {
+          "description": "HTTP method. Default GET.",
+          "type": "string"
+        },
+        "params": {
+          "additionalProperties": true,
+          "description": "Query parameters. Values are scalars, or lists of scalars for repeated keys.",
+          "type": "object"
+        },
+        "url": {
+          "description": "URL. A missing scheme is https (http for localhost). May use \u003cvar name=x /\u003e.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "url"
+      ],
+      "type": "object"
+    },
+    "Step": {
+      "additionalProperties": false,
+      "not": {
+        "anyOf": [
+          {
+            "required": [
+              "request",
+              "code"
+            ]
+          },
+          {
+            "required": [
+              "request",
+              "exec"
+            ]
+          },
+          {
+            "required": [
+              "code",
+              "exec"
+            ]
+          }
+        ]
+      },
+      "properties": {
+        "alwaysContinue": {
+          "description": "A failure of this step does not fail the suite.",
+          "type": "boolean"
+        },
+        "alwaysRun": {
+          "description": "Run even if an earlier step failed (for cleanup).",
+          "type": "boolean"
+        },
+        "assignments": {
+          "description": "Values to copy from the result into variables.",
+          "items": {
+            "$ref": "#/$defs/Assignment"
+          },
+          "type": "array"
+        },
+        "auth": {
+          "description": "Auth profile for this request: a name from the suite's auth map, or \"none\". Defaults to defaultAuth.",
+          "type": "string"
+        },
+        "code": {
+          "$ref": "#/$defs/Code",
+          "description": "Call a Go function registered with hisepress.Register."
+        },
+        "conditions": {
+          "description": "Expressions that must evaluate to their expected values for the step to pass.",
+          "items": {
+            "$ref": "#/$defs/Condition"
+          },
+          "type": "array"
+        },
+        "description": {
+          "description": "Free text, logged when the step runs. May use \u003cvar name=x /\u003e.",
+          "type": "string"
+        },
+        "exec": {
+          "$ref": "#/$defs/Exec",
+          "description": "Run an external program; its JSON output is the step result."
+        },
+        "expectedHTTPStatus": {
+          "description": "Exact status the response must have. Default: any 2xx.",
+          "maximum": 599,
+          "minimum": 100,
+          "type": "integer"
+        },
+        "expectedResultsLength": {
+          "description": "Length a JSON array response must have.",
+          "type": "integer"
+        },
+        "failureConditions": {
+          "description": "While waiting, stop retrying and fail when any of these evaluates to its expected value.",
+          "items": {
+            "$ref": "#/$defs/Condition"
+          },
+          "type": "array"
+        },
+        "name": {
+          "description": "Step name, shown in logs and reports.",
+          "type": "string"
+        },
+        "request": {
+          "$ref": "#/$defs/Request",
+          "description": "An HTTP request to make."
+        },
+        "skipConditions": {
+          "description": "The step is skipped when any of these evaluates to its expected value.",
+          "items": {
+            "$ref": "#/$defs/Condition"
+          },
+          "type": "array"
+        },
+        "timeoutInMinutes": {
+          "description": "How long wait may keep retrying. Default 60.",
+          "type": "integer"
+        },
+        "wait": {
+          "description": "Retry until the step passes, with exponential backoff (1s up to 1m), until timeoutInMinutes or a failure condition. Not valid with code or exec.",
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "A hisepress test suite: variables, authentication profiles and an ordered list of steps.",
+  "properties": {
+    "auth": {
+      "additionalProperties": {
+        "$ref": "#/$defs/AuthProfile"
+      },
+      "description": "Named authentication profiles. Steps select one with their auth field.",
+      "type": "object"
+    },
+    "defaultAuth": {
+      "description": "Name of the auth profile used by request steps that don't set auth.",
+      "type": "string"
+    },
+    "description": {
+      "description": "What the suite tests.",
+      "type": "string"
+    },
+    "name": {
+      "description": "Display name. Defaults to the file name.",
+      "type": "string"
+    },
+    "secrets": {
+      "description": "Names of variables whose values are redacted from logs and reports.",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "steps": {
+      "description": "Steps, run in order.",
+      "items": {
+        "$ref": "#/$defs/Step"
+      },
+      "minItems": 1,
+      "type": "array"
+    },
+    "tags": {
+      "description": "Labels for selecting suites with --tag. Matching ignores case and punctuation.",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "variables": {
+      "additionalProperties": true,
+      "description": "Starting variables. Strings may use \u003cvar name=x /\u003e to reference other variables or built-ins (Timestamp, RandomInt, RandomString). Override with --var or HISEPRESS_VAR_\u003cNAME\u003e.",
+      "type": "object"
+    }
+  },
+  "required": [
+    "steps"
+  ],
+  "title": "hisepress suite",
+  "type": "object"
+}

@@ -1,0 +1,69 @@
+# yaml-language-server: $schema=../schema/suite.schema.json
+# A suite that runs against the public httpbin.org service, no credentials needed:
+#
+#   hisepress run examples/httpbin.yaml
+#   hisepress run examples/httpbin.yaml --var host=httpbin.org --verbose
+name: httpbin example
+description: Chains requests together, captures values, and checks them.
+tags: [demo]
+
+variables:
+  host: httpbin.org
+  # variables can use built-ins (RandomString, RandomInt, Timestamp) and other variables
+  title: "widget-<var name=RandomString />"
+  skipCleanup: false
+
+steps:
+  - name: create a thing
+    description: POST a JSON body and capture what the server echoes back
+    request:
+      url: https://<var name=host />/post
+      method: POST
+      body:
+        name: <var name=title />
+        quantity: 3
+    assignments:
+      - var: echoedName
+        jsonPath: $.json.name
+      - var: echoedQuantity
+        jsonPath: $.json.quantity
+    conditions:
+      - condition: echoedName == title
+        expectedValue: true
+      - condition: echoedQuantity == 3
+        expectedValue: true
+
+  - name: use the captured value in a later request
+    request:
+      url: https://<var name=host />/get
+      params:
+        name: <var name=echoedName />
+      headers:
+        X-Demo: "yes"
+    assignments:
+      - var: seenName
+        jsonPath: $.args.name
+    conditions:
+      - condition: seenName == title
+        expectedValue: true
+
+  - name: expect a non-200 response
+    request:
+      url: https://<var name=host />/status/404
+    expectedHTTPStatus: 404
+
+  - name: retry until it succeeds
+    description: httpbin's /delay returns after 1s; wait steps retry with backoff
+    wait: true
+    timeoutInMinutes: 1
+    request:
+      url: https://<var name=host />/delay/1
+
+  - name: cleanup always runs, even if an earlier step failed
+    alwaysRun: true
+    skipConditions:
+      - condition: skipCleanup
+        expectedValue: true
+    request:
+      url: https://<var name=host />/anything/cleanup
+      method: DELETE
